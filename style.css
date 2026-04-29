@@ -1,0 +1,808 @@
+/* =============================================
+   CSS VARIABLES & RESET
+============================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pink-deep:  #c2517a;
+  --pink-mid:   #e8a5b2;
+  --pink-light: #ffd9df;
+  --pink-pale:  #fff0f3;
+  --gold:       #c9a84c;
+  --gold-light: #f0d080;
+  --cream:      #fffaf7;
+  --dark:       #0f0a14;
+  --text-dark:  #2a1a22;
+  --text-mid:   #7a4060;
+  --text-light: #b07a90;
+  --white:      #ffffff;
+
+  --font-display: 'Cormorant Garamond', serif;
+  --font-script:  'Dancing Script', cursive;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--text-dark);
+  overflow-x: hidden;
+}
+
+/* =============================================
+   SCROLL SNAP CONTAINER
+============================================= */
+#site-container {
+  display: none;
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+#site-container::-webkit-scrollbar { display: none; }
+
+.section {
+  scroll-snap-align: start;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* =============================================
+   FLOATING NAV DOTS
+============================================= */
+#nav-dots {
+  display: none;
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(194, 81, 122, 0.3);
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+.nav-dot.active {
+  background: var(--pink-deep);
+  transform: scale(1.4);
+}
+.nav-dot:hover::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.7);
+  color: white;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-family: var(--font-body);
+}
+
+/* =============================================
+   MUTE BUTTON
+============================================= */
+#mute-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 1000;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(194, 81, 122, 0.3);
+  cursor: pointer;
+  font-size: 18px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+#mute-btn:hover { background: rgba(194, 81, 122, 0.2); }
+
+/* =============================================
+   CONFETTI CANVAS
+============================================= */
+#confetti-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  display: none;
+}
+
+/* =============================================
+   PAGE 1 — LOCK SCREEN
+============================================= */
+#lock-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 4vh, 32px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+#lock-screen.unlocking {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+}
+
+#lock-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lock-header {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+.lock-header h1 {
+  font-family: var(--font-script);
+  font-size: clamp(20px, 5vw, 32px);
+  color: var(--pink-mid);
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+.lock-header p {
+  font-family: var(--font-body);
+  font-size: clamp(10px, 2vw, 12px);
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* LCD Display — slots fixes pour garder les proportions */
+.lcd-screen {
+  position: relative;
+  z-index: 2;
+  background: #050505;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: clamp(12px, 2.5vh, 18px) clamp(20px, 5vw, 36px);
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.15), inset 0 0 10px rgba(0,0,0,0.5);
+}
+.lcd-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 20px); /* espacement fixe entre chaque slot */
+}
+/* Chaque slot a une largeur fixe — le point ne se "colle" plus */
+.lcd-slot {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(22px, 6vw, 30px);
+  color: var(--gold-light);
+  width: 1ch;
+  text-align: center;
+  display: inline-block;
+  transition: color 0.2s ease;
+}
+.lcd-screen.error   .lcd-slot { color: #ff6060; }
+.lcd-screen.success .lcd-slot { color: #60ff90; }
+
+.lcd-screen.error {
+  animation: shake 0.5s ease;
+  border-color: #e04040;
+  box-shadow: 0 0 20px rgba(224,64,64,0.3);
+}
+.lcd-screen.success {
+  border-color: #40c080;
+  box-shadow: 0 0 20px rgba(64,192,128,0.3);
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-8px); }
+  40%     { transform: translateX(8px); }
+  60%     { transform: translateX(-6px); }
+  80%     { transform: translateX(6px); }
+}
+
+/* Keypad — taille proportionnelle à l'écran */
+.keypad {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(8px, 2vw, 14px);
+  width: min(80vw, 280px); /* proportionnel, jamais trop grand ni trop petit */
+  padding: 0;
+}
+.key {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.07);
+  color: white;
+  font-family: var(--font-body);
+  font-size: clamp(14px, 4vw, 20px);
+  font-weight: 300;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  /* min-height supprimé : on laisse l'aspect-ratio gérer la hauteur */
+}
+.key:hover  { background: rgba(255,255,255,0.13); }
+.key:active { transform: scale(0.91); background: rgba(255,255,255,0.2); }
+
+/* Bouton effacer — même style que les autres, juste l'icône ⌫ */
+.key.key-clear {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  font-size: clamp(16px, 4.5vw, 22px);
+  letter-spacing: 0;
+}
+.key.key-clear:hover  { background: rgba(255,255,255,0.13); color: white; }
+
+.key.key-validate {
+  background: var(--pink-deep);
+  border-color: var(--pink-deep);
+  font-size: clamp(16px, 4.5vw, 22px);
+}
+.key.key-validate:hover { background: #d4638a; }
+
+/* =============================================
+   PAGE 2 — HERO
+============================================= */
+#hero {
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 24px;
+}
+
+/* Pétales tombants */
+.petal {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  animation: petalFall linear infinite;
+}
+@keyframes petalFall {
+  0%   { transform: translateY(-20px) rotate(0deg) scale(1);   opacity: 0;   }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(110vh) rotate(720deg) scale(0.6); opacity: 0; }
+}
+
+.hero-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--pink-deep);
+  opacity: 0;
+  animation: fadeUp 1s ease 0.5s forwards;
+  margin-bottom: 20px;
+}
+
+.hero-name {
+  font-family: var(--font-display);
+  font-size: clamp(72px, 18vw, 140px);
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  letter-spacing: -2px;
+  position: relative;
+  z-index: 2;
+}
+.hero-name .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: charReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes charReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-subtitle {
+  font-family: var(--font-display);
+  font-size: clamp(14px, 3vw, 20px);
+  font-weight: 300;
+  letter-spacing: 6px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeUp 1s ease 2s forwards;
+  margin-top: 16px;
+}
+
+.hero-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--pink-mid), transparent);
+  margin: 24px auto 0;
+  opacity: 0;
+  animation: fadeUp 1s ease 2.3s forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+   PAGE 3 — GALERIE / MUSÉE
+============================================= */
+#gallery {
+  background: #fafafa;
+  padding: 80px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.gallery-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.gallery-eyebrow {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.gallery-title {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 5vw, 42px);
+  font-weight: 300;
+  color: var(--text-dark);
+  font-style: italic;
+}
+.gallery-subtitle {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--text-light);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.artwork {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.artwork.visible { opacity: 1; transform: translateY(0); }
+
+.artwork-frame {
+  width: 100%;
+  aspect-ratio: 4/5;
+  border: 8px solid white;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.artwork-frame:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.16);
+}
+.artwork-frame .placeholder-img {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 8px;
+}
+.artwork:nth-child(1) .placeholder-img { background: #f5e6ec; }
+.artwork:nth-child(2) .placeholder-img { background: #e6eef5; }
+.artwork:nth-child(3) .placeholder-img { background: #eef5e6; }
+.artwork:nth-child(4) .placeholder-img { background: #f5f0e6; }
+.artwork:nth-child(5) .placeholder-img { background: #ede6f5; }
+.artwork:nth-child(6) .placeholder-img { background: #f5e6e6; }
+
+.placeholder-icon  { font-size: 32px; opacity: 0.4; }
+.placeholder-label {
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(0,0,0,0.25);
+  font-family: var(--font-body);
+}
+
+.artwork-label      { width: calc(100% - 16px); padding: 12px 4px 4px; text-align: left; }
+.artwork-title      { font-family: var(--font-display); font-size: 15px; font-style: italic; color: var(--text-dark); }
+.artwork-desc       { font-family: var(--font-body); font-size: 11px; color: var(--text-light); margin-top: 4px; line-height: 1.5; }
+.artwork-collection { font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.2); margin-top: 6px; }
+
+/* =============================================
+   PAGE 4 — MESSAGE DU CŒUR
+============================================= */
+#message {
+  background: var(--pink-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  position: relative;
+}
+
+.floral-corner { position: absolute; pointer-events: none; opacity: 0.18; }
+.floral-tl     { top: 0; left: 0; width: clamp(100px, 18vw, 200px); }
+.floral-br     { bottom: 0; right: 0; width: clamp(100px, 18vw, 200px); transform: rotate(180deg); }
+
+.message-inner {
+  max-width: 680px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.message-eyebrow {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--pink-deep);
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.big-quote {
+  font-family: var(--font-display);
+  font-size: 120px;
+  color: var(--pink-mid);
+  opacity: 0.2;
+  line-height: 0.5;
+  position: absolute;
+  top: 0; left: -10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* FIX mots collés : word est inline (pas inline-block) + word-spacing explicite */
+.message-text {
+  font-family: var(--font-script);
+  font-size: clamp(18px, 3vw, 24px);
+  line-height: 2.1;
+  color: var(--text-dark);
+  text-align: left;
+  position: relative;
+  word-spacing: 0.08em; /* espace naturel entre mots */
+}
+.message-text p { margin-bottom: 1.3em; }
+
+.message-text .word {
+  display: inline;            /* inline — pas inline-block qui supprime les espaces */
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.message-text .word.revealed { opacity: 1; }
+
+.message-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 28px 0;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.message-divider.revealed { opacity: 1; }
+.message-divider-line {
+  flex: 1; max-width: 80px; height: 1px;
+  background: linear-gradient(to right, transparent, var(--pink-mid));
+}
+.message-divider-line.right { background: linear-gradient(to left, transparent, var(--pink-mid)); }
+.message-divider-icon { color: var(--pink-mid); font-size: 16px; }
+
+.message-signature {
+  font-family: var(--font-script);
+  font-size: clamp(20px, 3vw, 26px);
+  color: var(--pink-deep);
+  text-align: right;
+  padding-right: 20px;
+  opacity: 0;
+  transition: opacity 0.8s ease 0.3s;
+}
+.message-signature.revealed { opacity: 1; }
+
+/* =============================================
+   PAGE 5 — CE QUE J'AIME CHEZ TOI
+============================================= */
+#qualities {
+  background: var(--cream);
+  padding: 80px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.qualities-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.qualities-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5vw, 44px);
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text-dark);
+}
+.qualities-sub {
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-top: 10px;
+}
+
+/* Wrapper du carrousel */
+.cards-carousel-wrapper {
+  width: 100%;
+  max-width: 900px;
+  position: relative;
+}
+
+/* GRILLE desktop — 3 colonnes */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+.flip-card {
+  height: 200px;
+  perspective: 1000px;
+  cursor: pointer;
+}
+.flip-card-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.flip-card-front {
+  background: var(--pink-light);
+  border: 1px solid rgba(194,81,122,0.1);
+}
+.flip-card-front svg {
+  width: 40px; height: 40px;
+  color: var(--pink-deep);
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+.flip-hint {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  position: absolute;
+  bottom: 14px;
+}
+.flip-card-back {
+  background: white;
+  border: 1px solid var(--pink-mid);
+  transform: rotateY(180deg);
+}
+.flip-card-back p {
+  font-family: var(--font-script);
+  font-size: clamp(18px, 2.5vw, 22px);
+  color: var(--text-dark);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Indicateurs de carrousel (visibles seulement mobile) */
+.carousel-indicators {
+  display: none;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.carousel-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: rgba(194,81,122,0.25);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+.carousel-dot.active {
+  background: var(--pink-deep);
+  transform: scale(1.3);
+}
+
+/* =============================================
+   PAGE 6 — FAIRE UN VŒU
+============================================= */
+#wish {
+  background: var(--dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.wish-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+}
+.wish-glow-1 { width: 400px; height: 400px; background: rgba(194,81,122,0.12); top: -100px; left: -100px; }
+.wish-glow-2 { width: 300px; height: 300px; background: rgba(201,168,76,0.08); bottom: -50px; right: -50px; }
+
+.wish-intro {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 4vw, 32px);
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  margin-bottom: 40px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  position: relative; z-index: 2;
+}
+.wish-intro.visible { opacity: 1; transform: translateY(0); }
+
+#cake-wrapper {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 40px;
+}
+#cake-svg {
+  width: clamp(200px, 50vw, 300px);
+  filter: drop-shadow(0 8px 32px rgba(232,165,178,0.2));
+}
+
+/* Flammes — animation naturelle via JS (keyframes dynamiques) */
+.flame-group {
+  transform-origin: 50% 100%;
+  /* L'animation CSS est appliquée en JS pour pouvoir la retirer proprement */
+}
+
+/* Fumée — cachée par défaut, révélée en JS */
+.smoke-group { opacity: 0; transition: opacity 0.5s ease; }
+
+.wish-btn {
+  position: relative; z-index: 2;
+  padding: 16px 40px;
+  border-radius: 50px;
+  background: var(--pink-deep);
+  color: white;
+  font-family: var(--font-body);
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 40px rgba(194,81,122,0.3);
+}
+.wish-btn:hover  { background: #d4638a; box-shadow: 0 0 60px rgba(194,81,122,0.5); transform: scale(1.03); }
+.wish-btn:active { transform: scale(0.97); }
+.wish-btn:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
+
+.wish-message {
+  position: relative; z-index: 2;
+  text-align: center;
+  margin-top: 36px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.wish-message.revealed { opacity: 1; }
+.wish-message p:first-child {
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.wish-message p:last-child {
+  font-family: var(--font-script);
+  font-size: clamp(28px, 5vw, 42px);
+  color: white;
+  line-height: 1.3;
+}
+
+/* =============================================
+   RESPONSIVE
+============================================= */
+
+/* Tablette */
+@media (max-width: 900px) {
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .cards-grid   { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  #gallery, #message, #qualities, #wish { padding: 60px 20px; }
+  .gallery-grid { grid-template-columns: 1fr; gap: 28px; }
+
+  /* CARROUSEL mobile pour les cartes */
+  .cards-carousel-wrapper { overflow: hidden; }
+
+  .cards-grid {
+    display: flex;               /* flex row pour le scroll horizontal */
+    flex-wrap: nowrap;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 16px;
+    padding: 4px 20px 4px;
+    /* On laisse l'overflow gérer, pas de grille */
+    grid-template-columns: unset;
+  }
+  .cards-grid::-webkit-scrollbar { display: none; }
+
+  .flip-card {
+    flex: 0 0 75vw;              /* 1 carte prend ~75% de la largeur visible */
+    max-width: 320px;
+    height: 180px;
+    scroll-snap-align: center;
+  }
+
+  /* Indicateurs visibles sur mobile */
+  .carousel-indicators { display: flex; }
+
+  #nav-dots  { right: 10px; }
+  .big-quote { font-size: 80px; }
+  .message-inner { padding: 0; }
+}
