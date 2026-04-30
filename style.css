@@ -485,6 +485,15 @@ body {
   margin-top: 8px;
 }
 
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: relative;
+  z-index: 0;
+}
+
 /* ---- CLOTHESLINE DESKTOP ---- */
 .clothesline-scene {
   position: relative;
@@ -610,6 +619,17 @@ body {
 .artwork:nth-child(6) .placeholder-img { background: #f5e6e6; }
 
 .placeholder-icon  { font-size: 32px; opacity: 0.4; position: relative; z-index: 1; }
+
+/* Image réelle dans les cadres */
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  position: relative;
+  z-index: 0;
+}
 .placeholder-label {
   font-size: 10px; letter-spacing: 2px;
   text-transform: uppercase; color: rgba(0,0,0,0.25);
@@ -1039,3 +1059,4 @@ body {
   .gallery-mobile-carousel { display: none; }
   .clothesline-scene { display: block; }
 }
+

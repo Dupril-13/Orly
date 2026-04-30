@@ -272,11 +272,12 @@ function initNavDots() {
    SCROLL OBSERVER
 ============================================================ */
 function initScrollObserver() {
+  const container = document.getElementById('site-container');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) entry.target.classList.add('visible');
     });
-  }, { threshold: 0.15 });
+  }, { root: container, threshold: 0.15 });
 
   document.querySelectorAll('.artwork').forEach((el, i) => {
     el.style.transitionDelay = `${i * 0.1}s`;
@@ -305,18 +306,20 @@ function initMessage() {
     container.appendChild(p);
   });
 
-  const section       = document.getElementById('message');
+  const section     = document.getElementById('message');
   const siteContainer = document.getElementById('site-container');
   let revealed = false;
 
-  siteContainer.addEventListener('scroll', () => {
-    if (revealed) return;
-    const rect = section.getBoundingClientRect();
-    if (rect.top < window.innerHeight * 0.65) {
-      revealed = true;
-      revealWords();
-    }
-  });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !revealed) {
+        revealed = true;
+        revealWords();
+      }
+    });
+  }, { root: siteContainer, threshold: 0.2 });
+
+  observer.observe(section);
 }
 
 function revealWords() {
@@ -375,21 +378,20 @@ function initQualities() {
     autoFlipped = true;
     const cards = grid.querySelectorAll('.q-card');
     cards.forEach((card, i) => {
-      // Délai progressif : 300ms de base + 120ms par carte
-      const delay = 400 + i * 120;
+      const delay = 600 + i * 150;
       setTimeout(() => {
         card.classList.add('open');
       }, delay);
     });
   }
 
-  siteContainer.addEventListener('scroll', () => {
-    if (autoFlipped) return;
-    const rect = section.getBoundingClientRect();
-    if (rect.top < window.innerHeight * 0.7) {
-      autoFlipCards();
-    }
-  });
+  const qualitiesObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) autoFlipCards();
+    });
+  }, { root: siteContainer, threshold: 0.1 });
+
+  qualitiesObserver.observe(section);
 }
 
 /* ============================================================
@@ -541,8 +543,6 @@ function initFlames() {
 
 /* ============================================================
    WISH — souffler les bougies
-   Extinction simultanée : flammes 1&3 d'abord, puis flamme 2
-   après 500ms
 ============================================================ */
 function initWish() {
   document.getElementById('wish-btn').addEventListener('click', blowCandles);
@@ -780,7 +780,8 @@ function initHeroGarland() {
 // let isMuted   = false;
 
 function tryAutoplay() {
-  // Bouton mute commenté — pas de lecture auto
+  const music = document.getElementById('bg-music');
+  if (music) music.play().catch(() => {});
 }
 
 // muteBtn.addEventListener('click', () => { ... });
