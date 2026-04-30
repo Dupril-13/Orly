@@ -94,15 +94,24 @@ document.querySelectorAll('.key[data-digit]').forEach(btn => {
     handleDigit(btn.dataset.digit);
     btn.blur();
   });
+  // Force blur on touchend to prevent persistent active state on Android
+  btn.addEventListener('touchend', () => { setTimeout(() => btn.blur(), 50); }, { passive: true });
 });
 document.getElementById('key-clear').addEventListener('click', () => {
   handleClear();
   document.getElementById('key-clear').blur();
 });
+document.getElementById('key-clear').addEventListener('touchend', () => {
+  setTimeout(() => document.getElementById('key-clear').blur(), 50);
+}, { passive: true });
+
 document.getElementById('key-validate').addEventListener('click', () => {
   handleValidate();
   document.getElementById('key-validate').blur();
 });
+document.getElementById('key-validate').addEventListener('touchend', () => {
+  setTimeout(() => document.getElementById('key-validate').blur(), 50);
+}, { passive: true });
 
 document.addEventListener('keydown', e => {
   const ls = document.getElementById('lock-screen');
@@ -172,7 +181,7 @@ function unlockSite() {
     container.style.display = 'block';
 
     document.getElementById('nav-dots').style.display  = 'flex';
-    document.getElementById('mute-btn').style.display  = 'flex';
+    // document.getElementById('mute-btn').style.display  = 'flex'; // bouton mute désactivé
 
     initHero();
     initPetals();
@@ -326,7 +335,7 @@ function revealWords() {
 }
 
 /* ============================================================
-   QUALITIES — 23 cartes numérotées
+   QUALITIES — 23 cartes numérotées avec auto-retournement
 ============================================================ */
 function initQualities() {
   const grid = document.getElementById('qualities-grid');
@@ -353,6 +362,33 @@ function initQualities() {
     });
 
     grid.appendChild(card);
+  });
+
+  // Auto-flip : on retourne chaque carte en cascade, avec un délai croissant
+  // Dès que la section est visible
+  const section = document.getElementById('qualities');
+  const siteContainer = document.getElementById('site-container');
+  let autoFlipped = false;
+
+  function autoFlipCards() {
+    if (autoFlipped) return;
+    autoFlipped = true;
+    const cards = grid.querySelectorAll('.q-card');
+    cards.forEach((card, i) => {
+      // Délai progressif : 300ms de base + 120ms par carte
+      const delay = 400 + i * 120;
+      setTimeout(() => {
+        card.classList.add('open');
+      }, delay);
+    });
+  }
+
+  siteContainer.addEventListener('scroll', () => {
+    if (autoFlipped) return;
+    const rect = section.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.7) {
+      autoFlipCards();
+    }
   });
 }
 
@@ -737,31 +773,14 @@ function initHeroGarland() {
 }
 
 /* ============================================================
-   AUDIO
+   AUDIO — bouton mute désactivé pour le moment
 ============================================================ */
-const music   = document.getElementById('bg-music');
-const muteBtn = document.getElementById('mute-btn');
-let isMuted   = false;
+// const music   = document.getElementById('bg-music');
+// const muteBtn = document.getElementById('mute-btn');
+// let isMuted   = false;
 
 function tryAutoplay() {
-  if (!music.querySelector('source')) return;
-  music.volume = 0.35;
-  music.play().catch(() => {
-    muteBtn.textContent = '▶️';
-    muteBtn.title       = 'Lancer la musique';
-  });
+  // Bouton mute commenté — pas de lecture auto
 }
 
-muteBtn.addEventListener('click', () => {
-  if (!music.querySelector('source')) return;
-  if (music.paused) {
-    music.play();
-    isMuted = false;
-    music.muted = false;
-    muteBtn.textContent = '🔊';
-  } else {
-    isMuted             = !isMuted;
-    music.muted         = isMuted;
-    muteBtn.textContent = isMuted ? '🔇' : '🔊';
-  }
-});
+// muteBtn.addEventListener('click', () => { ... });

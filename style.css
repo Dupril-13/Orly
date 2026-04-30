@@ -26,9 +26,24 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
-  background: var(--cream);
+  background: var(--dark);
   color: var(--text-dark);
   overflow-x: hidden;
+}
+
+/* Ensure lock screen covers full area including nav bar */
+#lock-screen {
+  background: var(--dark);
+}
+
+/* Safe area padding for Android/iOS navigation bars */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #lock-screen {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
 }
 
 /* =============================================
@@ -197,6 +212,10 @@ body {
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  touch-action: manipulation;
+  outline: none;
 }
 .key:hover  { background: rgba(255,255,255,0.13); }
 .key:active { transform: scale(0.91); background: rgba(255,255,255,0.2); }
@@ -209,17 +228,25 @@ body {
   color: rgba(255,255,255,0.6);
   font-size: clamp(16px, 4.5vw, 22px);
   letter-spacing: 0;
+  touch-action: manipulation;
+  outline: none;
 }
 .key.key-clear:hover  { background: rgba(255,255,255,0.13); color: white; }
+.key.key-clear:active { background: rgba(255,255,255,0.2); color: white; }
 .key.key-clear:focus  { outline: none; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6); }
+.key.key-clear:focus:not(:focus-visible) { background: rgba(255,255,255,0.07); }
 
 .key.key-validate {
   background: var(--pink-deep);
   border-color: var(--pink-deep);
   font-size: clamp(16px, 4.5vw, 22px);
+  touch-action: manipulation;
+  outline: none;
 }
 .key.key-validate:hover  { background: #d4638a; }
+.key.key-validate:active { background: #b03060; }
 .key.key-validate:focus  { outline: none; background: var(--pink-deep); }
+.key.key-validate:focus:not(:focus-visible) { background: var(--pink-deep); }
 
 /* LCD Screen — largeur alignée sur le clavier */
 .lcd-screen {
@@ -287,6 +314,12 @@ body {
   display: block;
   overflow: visible;
   max-height: 130px;
+}
+
+@media (max-width: 600px) {
+  .garland-svg {
+    max-height: 175px;
+  }
 }
 
 /* =============================================
@@ -799,7 +832,7 @@ body {
 }
 .qualities-count {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: clamp(17px, 2.8vw, 22px);
   letter-spacing: 2px;
   color: var(--gold);
   margin-top: 6px;
@@ -850,7 +883,7 @@ body {
 /* Texte caché */
 .q-text {
   font-family: var(--font-script);
-  font-size: clamp(14px, 2.2vw, 18px);
+  font-size: clamp(15px, 2.5vw, 19px);
   color: var(--text-dark);
   text-align: center;
   line-height: 1.35;
@@ -999,7 +1032,7 @@ body {
   }
   .q-card { min-height: 70px; padding: 10px 6px; }
   .q-number { font-size: 22px; }
-  .q-text { font-size: 12px; }
+  .q-text { font-size: 14px; }
 }
 
 @media (min-width: 601px) {
