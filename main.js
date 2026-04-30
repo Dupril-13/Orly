@@ -19,13 +19,40 @@ En ce jour où tu souffles une bougie de plus, je ne te souhaite pas juste du bo
 
 Merci d'exister. Merci d'avoir choisi de jouer un rôle dans le film de ma vie.`;
 
+/* 23 qualités pour ses 23 ans */
+const qualities = [
+  "Ta force silencieuse",
+  "Ton sourire qui guérit",
+  "Ta lumière contagieuse",
+  "Ton courage discret",
+  "Ta générosité naturelle",
+  "La façon dont tu existes",
+  "Tes éclats de rire",
+  "Ta douceur sincère",
+  "Ton intelligence vive",
+  "Ta sensibilité rare",
+  "Ta façon d'écouter",
+  "Ton regard qui comprend",
+  "Ta légèreté précieuse",
+  "Ton âme curieuse",
+  "Ta façon de prendre soin",
+  "Tes silences qui parlent",
+  "Ta présence apaisante",
+  "Ton élégance naturelle",
+  "Ta persévérance discrète",
+  "Ton cœur généreux",
+  "Ta façon d'aimer",
+  "Ton authenticité rare",
+  "Simplement toi",
+];
+
 /* ============================================================
    LOCK SCREEN
 ============================================================ */
 let currentInput = '';
 
-const lcd        = document.getElementById('lcd');
-const slots      = [0,1,2,3].map(i => document.getElementById(`slot-${i}`));
+const lcd   = document.getElementById('lcd');
+const slots = [0,1,2,3].map(i => document.getElementById(`slot-${i}`));
 
 function updateLCD() {
   slots.forEach((slot, i) => {
@@ -47,7 +74,6 @@ function handleClear() {
 
 function handleValidate() {
   if (currentInput.length < 4) return;
-
   if (currentInput === SECRET_CODE) {
     lcd.classList.add('success');
     slots.forEach(s => s.textContent = '✓');
@@ -63,14 +89,12 @@ function handleValidate() {
   }
 }
 
-// Boutons du clavier
 document.querySelectorAll('.key[data-digit]').forEach(btn => {
   btn.addEventListener('click', () => handleDigit(btn.dataset.digit));
 });
 document.getElementById('key-clear').addEventListener('click', handleClear);
 document.getElementById('key-validate').addEventListener('click', handleValidate);
 
-// Support clavier physique
 document.addEventListener('keydown', e => {
   const ls = document.getElementById('lock-screen');
   if (!ls || ls.style.display === 'none') return;
@@ -80,7 +104,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ============================================================
-   LOCK PARTICLES (canvas)
+   LOCK PARTICLES
 ============================================================ */
 (function initLockParticles() {
   const canvas = document.getElementById('lock-particles');
@@ -126,7 +150,7 @@ document.addEventListener('keydown', e => {
 })();
 
 /* ============================================================
-   UNLOCK — transition vers le site
+   UNLOCK
 ============================================================ */
 function unlockSite() {
   const lockScreen = document.getElementById('lock-screen');
@@ -138,20 +162,16 @@ function unlockSite() {
     const container = document.getElementById('site-container');
     container.style.display = 'block';
 
-    const navDots = document.getElementById('nav-dots');
-    navDots.style.display = 'flex';
+    document.getElementById('nav-dots').style.display  = 'flex';
+    document.getElementById('mute-btn').style.display  = 'flex';
 
-    const muteBtn = document.getElementById('mute-btn');
-    muteBtn.style.display = 'flex';
-
-    // Init dans l'ordre
     initHero();
     initPetals();
     initNavDots();
     initScrollObserver();
     initMessage();
-    initFlipCards();
-    initCarousel();
+    initQualities();
+    initMobileGallery();
     initFlames();
     initWish();
     tryAutoplay();
@@ -159,7 +179,7 @@ function unlockSite() {
 }
 
 /* ============================================================
-   HERO — lettres une à une
+   HERO
 ============================================================ */
 function initHero() {
   const name      = 'Orly';
@@ -172,13 +192,12 @@ function initHero() {
     span.style.animationDelay = `${0.8 + i * 0.2}s`;
     container.appendChild(span);
   });
-  // Confetti quand le nom finit de s'écrire
   const delay = 800 + name.length * 200 + 500;
   setTimeout(launchConfetti, delay);
 }
 
 /* ============================================================
-   PÉTALES TOMBANTS
+   PÉTALES
 ============================================================ */
 function initPetals() {
   const hero  = document.getElementById('hero');
@@ -205,7 +224,7 @@ function initPetals() {
    NAV DOTS
 ============================================================ */
 function initNavDots() {
-  const SECTIONS = ['hero', 'gallery', 'message', 'qualities', 'wish'];
+  const SECTIONS  = ['hero', 'gallery', 'message', 'qualities', 'wish'];
   const dots      = document.querySelectorAll('.nav-dot');
   const container = document.getElementById('site-container');
 
@@ -230,7 +249,7 @@ function initNavDots() {
 }
 
 /* ============================================================
-   INTERSECTION OBSERVER (animations au scroll)
+   SCROLL OBSERVER
 ============================================================ */
 function initScrollObserver() {
   const observer = new IntersectionObserver(entries => {
@@ -240,7 +259,7 @@ function initScrollObserver() {
   }, { threshold: 0.15 });
 
   document.querySelectorAll('.artwork').forEach((el, i) => {
-    el.style.transitionDelay = `${i * 0.08}s`;
+    el.style.transitionDelay = `${i * 0.1}s`;
     observer.observe(el);
   });
 
@@ -249,7 +268,7 @@ function initScrollObserver() {
 }
 
 /* ============================================================
-   MESSAGE — révélation mot à mot
+   MESSAGE
 ============================================================ */
 function initMessage() {
   const container = document.getElementById('message-text');
@@ -257,19 +276,16 @@ function initMessage() {
 
   messageContent.split('\n\n').forEach(para => {
     const p = document.createElement('p');
-    // On injecte les mots avec un espace après chacun,
-    // en inline (pas inline-block) pour éviter les collisions
     para.split(' ').forEach((word, wi, arr) => {
       const span = document.createElement('span');
       span.className   = 'word';
-      // Ajoute un espace sauf après le dernier mot du paragraphe
       span.textContent = word + (wi < arr.length - 1 ? ' ' : '');
       p.appendChild(span);
     });
     container.appendChild(p);
   });
 
-  const section      = document.getElementById('message');
+  const section       = document.getElementById('message');
   const siteContainer = document.getElementById('site-container');
   let revealed = false;
 
@@ -299,55 +315,128 @@ function revealWords() {
 }
 
 /* ============================================================
-   FLIP CARDS
+   QUALITIES — 23 cartes numérotées
 ============================================================ */
-function initFlipCards() {
-  document.querySelectorAll('.flip-card').forEach(card => {
-    card.addEventListener('click', () => card.classList.toggle('flipped'));
+function initQualities() {
+  const grid = document.getElementById('qualities-grid');
+  grid.innerHTML = '';
+
+  qualities.forEach((text, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Raison ${i + 1}`);
+
+    card.innerHTML = `
+      <span class="q-number">${i + 1}</span>
+      <span class="q-text">${text}</span>
+      <span class="q-hint">appuie</span>
+    `;
+
+    card.addEventListener('click', () => card.classList.toggle('open'));
     card.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        card.classList.toggle('flipped');
+        card.classList.toggle('open');
       }
     });
+
+    grid.appendChild(card);
   });
 }
 
 /* ============================================================
-   CARROUSEL MOBILE (swipe horizontal)
+   MOBILE GALLERY CAROUSEL — auto-advance + touch/swipe
 ============================================================ */
-function initCarousel() {
-  if (window.innerWidth > 600) return; // grille desktop — pas besoin
+function initMobileGallery() {
+  if (window.innerWidth > 600) return;
 
-  const grid       = document.getElementById('cards-grid');
-  const dots       = document.querySelectorAll('.carousel-dot');
-  const cards      = document.querySelectorAll('.flip-card');
-  const CARD_COUNT = cards.length;
+  const track     = document.getElementById('gallery-track');
+  const slides    = Array.from(track.querySelectorAll('.gallery-slide'));
+  const dots      = Array.from(document.querySelectorAll('.gallery-dot'));
+  const SLIDE_COUNT = slides.length;
+  let current   = 0;
+  let autoTimer = null;
+  let touchStartX = 0;
+  let touchStartTime = 0;
 
-  function getActiveIndex() {
-    const scrollLeft   = grid.scrollLeft;
-    const cardWidth    = grid.scrollWidth / CARD_COUNT;
-    return Math.round(scrollLeft / cardWidth);
+  function getSlideWidth() {
+    // Chaque slide: 70vw + 16px padding
+    return slides[0] ? slides[0].offsetWidth + 16 : window.innerWidth * 0.7 + 16;
   }
 
-  grid.addEventListener('scroll', () => {
-    const idx = getActiveIndex();
-    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  function goTo(index, animate = true) {
+    if (!animate) track.style.transition = 'none';
+    else track.style.transition = 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)';
+
+    current = ((index % SLIDE_COUNT) + SLIDE_COUNT) % SLIDE_COUNT;
+
+    // Centrage : offset pour que la slide active soit au centre
+    const wrapper   = track.parentElement;
+    const wrapWidth = wrapper.offsetWidth;
+    const sw        = getSlideWidth();
+    // Padding de 15vw à gauche pour centrer la première
+    const padLeft   = (wrapWidth - sw + 16) / 2;
+    const offset    = -(current * sw) + padLeft;
+    track.style.transform = `translateX(${offset}px)`;
+
+    slides.forEach((s, i) => {
+      s.classList.toggle('active-slide', i === current);
+    });
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+
+    // Lancer l'overlay de développement sur la slide active
+    const overlay = slides[current].querySelector('.photo-develop-overlay');
+    if (overlay) {
+      overlay.style.animation = 'none';
+      overlay.offsetHeight; // reflow
+      overlay.style.animation = 'photoDevelop 1.8s ease forwards';
+    }
+
+    if (!animate) requestAnimationFrame(() => { track.style.transition = ''; });
+  }
+
+  function startAuto() {
+    stopAuto();
+    autoTimer = setInterval(() => goTo(current + 1), 3000);
+  }
+  function stopAuto() {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  }
+
+  // Touch swipe
+  track.addEventListener('touchstart', e => {
+    touchStartX    = e.touches[0].clientX;
+    touchStartTime = Date.now();
+    stopAuto();
   }, { passive: true });
 
+  track.addEventListener('touchend', e => {
+    const dx   = e.changedTouches[0].clientX - touchStartX;
+    const dt   = Date.now() - touchStartTime;
+    if (Math.abs(dx) > 40 && dt < 400) {
+      goTo(dx < 0 ? current + 1 : current - 1);
+    }
+    startAuto();
+  }, { passive: true });
+
+  // Dots cliquables
   dots.forEach(dot => {
     dot.addEventListener('click', () => {
-      const idx      = parseInt(dot.dataset.index);
-      const cardWidth = grid.scrollWidth / CARD_COUNT;
-      grid.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
+      stopAuto();
+      goTo(parseInt(dot.dataset.index));
+      startAuto();
     });
   });
+
+  // Init
+  goTo(0, false);
+  startAuto();
 }
 
 /* ============================================================
-   FLAMMES — animation naturelle via JS
-   FIX : on anime via requestAnimationFrame pour pouvoir
-   arrêter l'animation proprement quand on souffle
+   FLAMMES — animation subtile et contenue
+   Amplitude très réduite : ±2% scale, ±0.6px translation
 ============================================================ */
 const flameGroups = [
   document.getElementById('flame1'),
@@ -355,15 +444,14 @@ const flameGroups = [
   document.getElementById('flame3'),
 ];
 
-let flameRAF = null;
+let flameRAF    = null;
 let flameActive = true;
 
 function initFlames() {
-  // Paramètres par flamme pour varier la phase et la vitesse
   const params = [
-    { phaseX: 0,    phaseY: 0,    speedX: 1.8, speedY: 2.2, ampX: 0.06, ampY: 0.08 },
-    { phaseX: 1.1,  phaseY: 0.7,  speedX: 2.1, speedY: 1.9, ampX: 0.07, ampY: 0.10 },
-    { phaseX: 2.3,  phaseY: 1.4,  speedX: 1.6, speedY: 2.4, ampX: 0.05, ampY: 0.09 },
+    { phaseX: 0,   phaseY: 0,   speedX: 1.8, speedY: 2.2, ampX: 0.018, ampY: 0.022 },
+    { phaseX: 1.1, phaseY: 0.7, speedX: 2.1, speedY: 1.9, ampX: 0.020, ampY: 0.025 },
+    { phaseX: 2.3, phaseY: 1.4, speedX: 1.6, speedY: 2.4, ampX: 0.015, ampY: 0.020 },
   ];
 
   let t = 0;
@@ -377,19 +465,19 @@ function initFlames() {
       const p  = params[i];
       const sx = 1 + Math.sin(t * p.speedX + p.phaseX) * p.ampX;
       const sy = 1 + Math.cos(t * p.speedY + p.phaseY) * p.ampY;
-      // Légère translation horizontale pour le vacillement
-      const tx = Math.sin(t * p.speedX * 0.7 + p.phaseX) * 0.8;
+      const tx = Math.sin(t * p.speedX * 0.7 + p.phaseX) * 0.6;
       flame.setAttribute('transform', `translate(${tx}, 0) scale(${sx}, ${sy})`);
     });
 
     flameRAF = requestAnimationFrame(animateFlames);
   }
-
   animateFlames();
 }
 
 /* ============================================================
    WISH — souffler les bougies
+   Extinction simultanée : flammes 1&3 d'abord, puis flamme 2
+   après 500ms
 ============================================================ */
 function initWish() {
   document.getElementById('wish-btn').addEventListener('click', blowCandles);
@@ -406,35 +494,39 @@ function blowCandles() {
     document.getElementById('smoke3'),
   ];
 
-  // Éteindre les flammes une par une avec un délai
-  flameGroups.forEach((flame, i) => {
-    setTimeout(() => {
-      if (!flame) return;
-      // Stop l'animation JS et masque la flamme
-      flame.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
-      flame.style.opacity    = '0';
-      flame.style.transform  = 'scale(0.1)';
-      // Affiche la fumée
-      if (smokes[i]) smokes[i].style.opacity = '1';
-    }, i * 350);
-  });
+  // Éteindre flammes extrêmes (1 et 3) d'abord
+  [0, 2].forEach(i => extinguishFlame(i, smokes[i]));
 
-  // Après l'extinction de la dernière flamme, stoppe le RAF
+  // Puis la flamme centrale (2) après 500ms
+  setTimeout(() => extinguishFlame(1, smokes[1]), 500);
+
+  // Stopper le RAF après tout
   setTimeout(() => {
     flameActive = false;
     if (flameRAF) cancelAnimationFrame(flameRAF);
-  }, flameGroups.length * 350 + 100);
+  }, 700);
 
-  // Message final + confetti
+  // Message final
   setTimeout(() => {
     document.getElementById('wish-message').classList.add('revealed');
     launchConfetti();
     btn.textContent = '🌸';
-  }, flameGroups.length * 350 + 600);
+  }, 1200);
+}
+
+function extinguishFlame(index, smokeEl) {
+  const flame = flameGroups[index];
+  if (!flame) return;
+  flame.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+  flame.style.opacity    = '0';
+  flame.style.transform  = 'scale(0.1)';
+  if (smokeEl) {
+    setTimeout(() => { smokeEl.style.opacity = '1'; }, 150);
+  }
 }
 
 /* ============================================================
-   CONFETTI (canvas)
+   CONFETTI
 ============================================================ */
 function launchConfetti() {
   const canvas = document.getElementById('confetti-canvas');
@@ -481,7 +573,6 @@ function launchConfetti() {
     });
 
     pieces = pieces.filter(p => p.y < canvas.height + 20);
-
     if (pieces.length > 0 && tick < 280) {
       requestAnimationFrame(draw);
     } else {
@@ -493,18 +584,16 @@ function launchConfetti() {
 }
 
 /* ============================================================
-   AUDIO / MUTE
+   AUDIO
 ============================================================ */
 const music   = document.getElementById('bg-music');
 const muteBtn = document.getElementById('mute-btn');
 let isMuted   = false;
 
 function tryAutoplay() {
-  // Aucune source définie → ne rien faire
   if (!music.querySelector('source')) return;
   music.volume = 0.35;
   music.play().catch(() => {
-    // Autoplay bloqué → bouton devient "lancer la musique"
     muteBtn.textContent = '▶️';
     muteBtn.title       = 'Lancer la musique';
   });
@@ -517,8 +606,8 @@ muteBtn.addEventListener('click', () => {
     muteBtn.textContent = '🔊';
     isMuted = false;
   } else {
-    isMuted       = !isMuted;
-    music.muted   = isMuted;
+    isMuted             = !isMuted;
+    music.muted         = isMuted;
     muteBtn.textContent = isMuted ? '🔇' : '🔊';
   }
 });

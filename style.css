@@ -172,23 +172,69 @@ body {
   margin-top: 8px;
 }
 
-/* LCD Display — slots fixes pour garder les proportions */
+/* Keypad — taille proportionnelle à l'écran */
+.keypad {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(8px, 2vw, 14px);
+  width: min(80vw, 280px);
+  padding: 0;
+}
+.key {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.07);
+  color: white;
+  font-family: var(--font-body);
+  font-size: clamp(14px, 4vw, 20px);
+  font-weight: 300;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.key:hover  { background: rgba(255,255,255,0.13); }
+.key:active { transform: scale(0.91); background: rgba(255,255,255,0.2); }
+
+.key.key-clear {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  font-size: clamp(16px, 4.5vw, 22px);
+  letter-spacing: 0;
+}
+.key.key-clear:hover  { background: rgba(255,255,255,0.13); color: white; }
+
+.key.key-validate {
+  background: var(--pink-deep);
+  border-color: var(--pink-deep);
+  font-size: clamp(16px, 4.5vw, 22px);
+}
+.key.key-validate:hover { background: #d4638a; }
+
+/* LCD Screen — largeur alignée sur le clavier */
 .lcd-screen {
   position: relative;
   z-index: 2;
   background: #050505;
   border: 1px solid var(--gold);
   border-radius: 12px;
-  padding: clamp(12px, 2.5vh, 18px) clamp(20px, 5vw, 36px);
+  padding: clamp(12px, 2.5vh, 18px) 0;
   box-shadow: 0 0 20px rgba(201, 168, 76, 0.15), inset 0 0 10px rgba(0,0,0,0.5);
+  /* Même largeur que le clavier */
+  width: min(80vw, 280px);
 }
 .lcd-display {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(12px, 3vw, 20px); /* espacement fixe entre chaque slot */
+  gap: clamp(16px, 5vw, 28px);
 }
-/* Chaque slot a une largeur fixe — le point ne se "colle" plus */
 .lcd-slot {
   font-family: 'Courier New', monospace;
   font-size: clamp(22px, 6vw, 30px);
@@ -219,53 +265,6 @@ body {
   80%     { transform: translateX(6px); }
 }
 
-/* Keypad — taille proportionnelle à l'écran */
-.keypad {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: clamp(8px, 2vw, 14px);
-  width: min(80vw, 280px); /* proportionnel, jamais trop grand ni trop petit */
-  padding: 0;
-}
-.key {
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.07);
-  color: white;
-  font-family: var(--font-body);
-  font-size: clamp(14px, 4vw, 20px);
-  font-weight: 300;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-tap-highlight-color: transparent;
-  /* min-height supprimé : on laisse l'aspect-ratio gérer la hauteur */
-}
-.key:hover  { background: rgba(255,255,255,0.13); }
-.key:active { transform: scale(0.91); background: rgba(255,255,255,0.2); }
-
-/* Bouton effacer — même style que les autres, juste l'icône ⌫ */
-.key.key-clear {
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.6);
-  font-size: clamp(16px, 4.5vw, 22px);
-  letter-spacing: 0;
-}
-.key.key-clear:hover  { background: rgba(255,255,255,0.13); color: white; }
-
-.key.key-validate {
-  background: var(--pink-deep);
-  border-color: var(--pink-deep);
-  font-size: clamp(16px, 4.5vw, 22px);
-}
-.key.key-validate:hover { background: #d4638a; }
-
 /* =============================================
    PAGE 2 — HERO
 ============================================= */
@@ -279,7 +278,6 @@ body {
   padding: 80px 24px;
 }
 
-/* Pétales tombants */
 .petal {
   position: absolute;
   pointer-events: none;
@@ -351,11 +349,11 @@ body {
 }
 
 /* =============================================
-   PAGE 3 — GALERIE / MUSÉE
+   PAGE 3 — GALERIE / MUSÉE — CLOTHESLINE
 ============================================= */
 #gallery {
   background: #fafafa;
-  padding: 80px 40px;
+  padding: 60px 0 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -365,7 +363,8 @@ body {
 
 .gallery-header {
   text-align: center;
-  margin-bottom: 56px;
+  margin-bottom: 48px;
+  padding: 0 24px;
 }
 .gallery-eyebrow {
   font-family: var(--font-body);
@@ -391,42 +390,123 @@ body {
   margin-top: 8px;
 }
 
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 36px;
-  max-width: 1100px;
+/* ---- CLOTHESLINE DESKTOP ---- */
+.clothesline-scene {
+  position: relative;
   width: 100%;
+  max-width: 1100px;
+  padding: 20px 60px 40px;
 }
 
+/* Le fil */
+.clothesline-wire {
+  position: absolute;
+  top: 38px;
+  left: 40px;
+  right: 40px;
+  height: 2px;
+  background: linear-gradient(to right, rgba(100,70,50,0.3), rgba(100,70,50,0.6), rgba(100,70,50,0.3));
+  border-radius: 1px;
+  z-index: 0;
+}
+.clothesline-wire::before,
+.clothesline-wire::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(100,70,50,0.5);
+  top: -4px;
+}
+.clothesline-wire::before { left: -5px; }
+.clothesline-wire::after  { right: -5px; }
+
+.clothesline-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0 32px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Chaque artwork accroché au fil */
 .artwork {
   display: flex;
   flex-direction: column;
   align-items: center;
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(20px);
   transition: opacity 0.8s ease, transform 0.8s ease;
 }
 .artwork.visible { opacity: 1; transform: translateY(0); }
 
+/* Petite ficelle */
+.artwork-string {
+  width: 1px;
+  height: 30px;
+  background: linear-gradient(to bottom, rgba(100,70,50,0.5), rgba(100,70,50,0.2));
+  margin-bottom: 0;
+  position: relative;
+}
+/* Épingle */
+.artwork-string::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -3px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
 .artwork-frame {
   width: 100%;
   aspect-ratio: 4/5;
-  border: 8px solid white;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  border: 6px solid white;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08);
   position: relative;
   overflow: hidden;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  transition: transform 0.5s cubic-bezier(0.34,1.1,0.64,1), box-shadow 0.4s ease;
 }
+
+/* Inclinaisons alternées */
+.artwork:nth-child(odd)  .artwork-frame { transform: rotate(-2.5deg); }
+.artwork:nth-child(even) .artwork-frame { transform: rotate(2deg); }
+.artwork:nth-child(3n)   .artwork-frame { transform: rotate(-1.5deg); }
+
 .artwork-frame:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.16);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.18);
+  transform: rotate(0deg) translateY(-4px) !important;
 }
+
+/* Effet polaroid — développement photo */
 .artwork-frame .placeholder-img {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
   flex-direction: column; gap: 8px;
+  position: relative;
+  overflow: hidden;
 }
+/* Overlay de développement */
+.artwork-frame .photo-develop-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,220,0.95) 0%, rgba(255,240,200,0.7) 40%, transparent 100%);
+  z-index: 2;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+}
+.artwork.visible .photo-develop-overlay {
+  animation: photoDevelop 1.8s ease forwards;
+}
+@keyframes photoDevelop {
+  0%   { opacity: 1; }
+  30%  { opacity: 0.85; }
+  60%  { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+
 .artwork:nth-child(1) .placeholder-img { background: #f5e6ec; }
 .artwork:nth-child(2) .placeholder-img { background: #e6eef5; }
 .artwork:nth-child(3) .placeholder-img { background: #eef5e6; }
@@ -434,17 +514,101 @@ body {
 .artwork:nth-child(5) .placeholder-img { background: #ede6f5; }
 .artwork:nth-child(6) .placeholder-img { background: #f5e6e6; }
 
-.placeholder-icon  { font-size: 32px; opacity: 0.4; }
+.placeholder-icon  { font-size: 32px; opacity: 0.4; position: relative; z-index: 1; }
 .placeholder-label {
   font-size: 10px; letter-spacing: 2px;
   text-transform: uppercase; color: rgba(0,0,0,0.25);
   font-family: var(--font-body);
+  position: relative; z-index: 1;
 }
 
-.artwork-label      { width: calc(100% - 16px); padding: 12px 4px 4px; text-align: left; }
-.artwork-title      { font-family: var(--font-display); font-size: 15px; font-style: italic; color: var(--text-dark); }
-.artwork-desc       { font-family: var(--font-body); font-size: 11px; color: var(--text-light); margin-top: 4px; line-height: 1.5; }
-.artwork-collection { font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.2); margin-top: 6px; }
+.artwork-label      { width: calc(100% - 12px); padding: 10px 4px 4px; text-align: left; }
+.artwork-title      { font-family: var(--font-display); font-size: 14px; font-style: italic; color: var(--text-dark); }
+.artwork-desc       { font-family: var(--font-body); font-size: 11px; color: var(--text-light); margin-top: 3px; line-height: 1.4; }
+.artwork-collection { font-family: var(--font-body); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,0.2); margin-top: 4px; }
+
+/* ---- MOBILE GALLERY CAROUSEL ---- */
+.gallery-mobile-carousel {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.gallery-carousel-track-wrapper {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.gallery-carousel-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.gallery-slide {
+  flex: 0 0 70vw;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 8px;
+  transition: transform 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.55s ease;
+  transform: scale(0.85);
+  opacity: 0.45;
+}
+.gallery-slide.active-slide {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.gallery-slide .artwork-frame {
+  width: 100%;
+  aspect-ratio: 4/5;
+  border: 6px solid white;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+  position: relative;
+  overflow: hidden;
+  /* Les slides ont toutes une légère inclinaison au repos, supprimée pour l'active */
+  transform: rotate(-2deg);
+  transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+}
+.gallery-slide.active-slide .artwork-frame {
+  transform: rotate(0deg);
+}
+
+.gallery-slide .artwork-label {
+  width: 100%;
+  padding: 8px 4px 0;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.2s;
+  text-align: center;
+}
+.gallery-slide.active-slide .artwork-label {
+  opacity: 1;
+}
+
+/* Dots mobile gallery */
+.gallery-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.gallery-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(194,81,122,0.25);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.gallery-dot.active {
+  background: var(--pink-deep);
+  transform: scale(1.4);
+}
 
 /* =============================================
    PAGE 4 — MESSAGE DU CŒUR
@@ -491,7 +655,6 @@ body {
   user-select: none;
 }
 
-/* FIX mots collés : word est inline (pas inline-block) + word-spacing explicite */
 .message-text {
   font-family: var(--font-script);
   font-size: clamp(18px, 3vw, 24px);
@@ -499,12 +662,12 @@ body {
   color: var(--text-dark);
   text-align: left;
   position: relative;
-  word-spacing: 0.08em; /* espace naturel entre mots */
+  word-spacing: 0.08em;
 }
 .message-text p { margin-bottom: 1.3em; }
 
 .message-text .word {
-  display: inline;            /* inline — pas inline-block qui supprime les espaces */
+  display: inline;
   opacity: 0;
   transition: opacity 0.35s ease;
 }
@@ -539,25 +702,25 @@ body {
 .message-signature.revealed { opacity: 1; }
 
 /* =============================================
-   PAGE 5 — CE QUE J'AIME CHEZ TOI
+   PAGE 5 — CE QUE J'AIME CHEZ TOI — 23 raisons
 ============================================= */
 #qualities {
   background: var(--cream);
-  padding: 80px 40px;
+  padding: 60px 24px 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
 }
 
 .qualities-header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 36px;
 }
 .qualities-title {
   font-family: var(--font-display);
-  font-size: clamp(28px, 5vw, 44px);
+  font-size: clamp(26px, 5vw, 42px);
   font-style: italic;
   font-weight: 300;
   color: var(--text-dark);
@@ -568,100 +731,90 @@ body {
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--text-light);
-  margin-top: 10px;
+  margin-top: 8px;
+}
+.qualities-count {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  margin-top: 6px;
+  font-style: italic;
 }
 
-/* Wrapper du carrousel */
-.cards-carousel-wrapper {
-  width: 100%;
-  max-width: 900px;
-  position: relative;
-}
-
-/* GRILLE desktop — 3 colonnes */
-.cards-grid {
+/* Grille compacte — petites cartes */
+.qualities-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
   width: 100%;
+  max-width: 920px;
 }
 
-.flip-card {
-  height: 200px;
-  perspective: 1000px;
+.q-card {
+  background: white;
+  border: 1px solid rgba(194,81,122,0.12);
+  border-radius: 12px;
+  padding: 12px 10px;
   cursor: pointer;
-}
-.flip-card-inner {
   position: relative;
-  width: 100%; height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
-
-.flip-card-front,
-.flip-card-back {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  min-height: 80px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
 }
-.flip-card-front {
-  background: var(--pink-light);
-  border: 1px solid rgba(194,81,122,0.1);
-}
-.flip-card-front svg {
-  width: 40px; height: 40px;
-  color: var(--pink-deep);
-  margin-bottom: 12px;
-  opacity: 0.7;
-}
-.flip-hint {
-  font-family: var(--font-body);
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-light);
+.q-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(194,81,122,0.12); }
+.q-card.open  { background: var(--pink-light); border-color: var(--pink-mid); }
+
+/* Numéro affiché par défaut */
+.q-number {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--pink-mid);
+  transition: opacity 0.25s ease, transform 0.25s ease;
   position: absolute;
-  bottom: 14px;
+  user-select: none;
 }
-.flip-card-back {
-  background: white;
-  border: 1px solid var(--pink-mid);
-  transform: rotateY(180deg);
-}
-.flip-card-back p {
-  font-family: var(--font-script);
-  font-size: clamp(18px, 2.5vw, 22px);
-  color: var(--text-dark);
-  text-align: center;
-  line-height: 1.4;
+.q-card.open .q-number {
+  opacity: 0;
+  transform: scale(0.5);
 }
 
-/* Indicateurs de carrousel (visibles seulement mobile) */
-.carousel-indicators {
-  display: none;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
+/* Texte caché */
+.q-text {
+  font-family: var(--font-script);
+  font-size: clamp(13px, 2vw, 16px);
+  color: var(--text-dark);
+  text-align: center;
+  line-height: 1.35;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.35s ease 0.1s, transform 0.35s ease 0.1s;
+  position: absolute;
+  padding: 8px;
+  pointer-events: none;
 }
-.carousel-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: rgba(194,81,122,0.25);
-  cursor: pointer;
-  transition: background 0.3s, transform 0.3s;
+.q-card.open .q-text {
+  opacity: 1;
+  transform: scale(1);
 }
-.carousel-dot.active {
-  background: var(--pink-deep);
-  transform: scale(1.3);
+
+/* Petit hint */
+.q-hint {
+  position: absolute;
+  bottom: 6px;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  opacity: 0.6;
+  font-family: var(--font-body);
+  transition: opacity 0.2s;
 }
+.q-card.open .q-hint { opacity: 0; }
 
 /* =============================================
    PAGE 6 — FAIRE UN VŒU
@@ -709,13 +862,11 @@ body {
   filter: drop-shadow(0 8px 32px rgba(232,165,178,0.2));
 }
 
-/* Flammes — animation naturelle via JS (keyframes dynamiques) */
+/* Flammes — amplitude réduite, mouvement subtil */
 .flame-group {
   transform-origin: 50% 100%;
-  /* L'animation CSS est appliquée en JS pour pouvoir la retirer proprement */
 }
 
-/* Fumée — cachée par défaut, révélée en JS */
 .smoke-group { opacity: 0; transition: opacity 0.5s ease; }
 
 .wish-btn {
@@ -763,46 +914,31 @@ body {
 /* =============================================
    RESPONSIVE
 ============================================= */
-
-/* Tablette */
 @media (max-width: 900px) {
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-  .cards-grid   { grid-template-columns: repeat(2, 1fr); }
+  .clothesline-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Mobile */
 @media (max-width: 600px) {
-  #gallery, #message, #qualities, #wish { padding: 60px 20px; }
-  .gallery-grid { grid-template-columns: 1fr; gap: 28px; }
+  #gallery, #message, #qualities, #wish { padding: 50px 16px 60px; }
 
-  /* CARROUSEL mobile pour les cartes */
-  .cards-carousel-wrapper { overflow: hidden; }
-
-  .cards-grid {
-    display: flex;               /* flex row pour le scroll horizontal */
-    flex-wrap: nowrap;
-    overflow-x: scroll;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 16px;
-    padding: 4px 20px 4px;
-    /* On laisse l'overflow gérer, pas de grille */
-    grid-template-columns: unset;
-  }
-  .cards-grid::-webkit-scrollbar { display: none; }
-
-  .flip-card {
-    flex: 0 0 75vw;              /* 1 carte prend ~75% de la largeur visible */
-    max-width: 320px;
-    height: 180px;
-    scroll-snap-align: center;
-  }
-
-  /* Indicateurs visibles sur mobile */
-  .carousel-indicators { display: flex; }
+  /* Cache la galerie desktop, montre le carousel */
+  .clothesline-scene  { display: none; }
+  .gallery-mobile-carousel { display: flex; }
 
   #nav-dots  { right: 10px; }
   .big-quote { font-size: 80px; }
   .message-inner { padding: 0; }
+
+  .qualities-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .q-card { min-height: 70px; padding: 10px 6px; }
+  .q-number { font-size: 22px; }
+  .q-text { font-size: 12px; }
+}
+
+@media (min-width: 601px) {
+  .gallery-mobile-carousel { display: none; }
+  .clothesline-scene { display: block; }
 }
