@@ -96,16 +96,16 @@ body {
 ============================================= */
 #mute-btn {
   position: fixed;
-  bottom: 24px;
-  right: 20px;
+  bottom: 20px;
+  right: 16px;
   z-index: 1000;
-  width: 44px; height: 44px;
+  width: 36px; height: 36px;
   border-radius: 50%;
   background: rgba(255,255,255,0.2);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(194, 81, 122, 0.3);
   cursor: pointer;
-  font-size: 18px;
+  font-size: 15px;
   display: none;
   align-items: center;
   justify-content: center;
@@ -263,6 +263,72 @@ body {
   40%     { transform: translateX(8px); }
   60%     { transform: translateX(-6px); }
   80%     { transform: translateX(6px); }
+}
+
+/* =============================================
+   HERO GARLAND
+============================================= */
+.hero-garland {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+}
+.garland-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+@keyframes butterflyFloat1 {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%       { transform: translateY(-6px) rotate(3deg); }
+}
+@keyframes butterflyFloat2 {
+  0%, 100% { transform: translateY(0) rotate(2deg); }
+  50%       { transform: translateY(-8px) rotate(-2deg); }
+}
+
+/* =============================================
+   BALLOONS
+============================================= */
+.balloon {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  animation: balloonSway ease-in-out infinite;
+}
+@keyframes balloonSway {
+  0%, 100% { transform: translateX(0) rotate(-4deg); }
+  33%       { transform: translateX(6px) rotate(3deg); }
+  66%       { transform: translateX(-5px) rotate(-2deg); }
+}
+
+/* =============================================
+   MESSAGE — ILLUSTRATIONS DE FOND
+============================================= */
+#message::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(194,81,122,0.06) 0%, transparent 50%),
+    radial-gradient(circle at 85% 70%, rgba(201,168,76,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.message-bg-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0.13;
 }
 
 /* =============================================
