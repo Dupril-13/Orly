@@ -90,10 +90,19 @@ function handleValidate() {
 }
 
 document.querySelectorAll('.key[data-digit]').forEach(btn => {
-  btn.addEventListener('click', () => handleDigit(btn.dataset.digit));
+  btn.addEventListener('click', () => {
+    handleDigit(btn.dataset.digit);
+    btn.blur();
+  });
 });
-document.getElementById('key-clear').addEventListener('click', handleClear);
-document.getElementById('key-validate').addEventListener('click', handleValidate);
+document.getElementById('key-clear').addEventListener('click', () => {
+  handleClear();
+  document.getElementById('key-clear').blur();
+});
+document.getElementById('key-validate').addEventListener('click', () => {
+  handleValidate();
+  document.getElementById('key-validate').blur();
+});
 
 document.addEventListener('keydown', e => {
   const ls = document.getElementById('lock-screen');
@@ -348,53 +357,55 @@ function initQualities() {
 }
 
 /* ============================================================
-   MOBILE GALLERY CAROUSEL — auto-advance + touch/swipe
+   MOBILE GALLERY CAROUSEL — centrage parfait garanti
 ============================================================ */
 function initMobileGallery() {
   if (window.innerWidth > 600) return;
 
-  const track     = document.getElementById('gallery-track');
-  const slides    = Array.from(track.querySelectorAll('.gallery-slide'));
-  const dots      = Array.from(document.querySelectorAll('.gallery-dot'));
+  const track       = document.getElementById('gallery-track');
+  const slides      = Array.from(track.querySelectorAll('.gallery-slide'));
+  const dotsWrapper = document.getElementById('gallery-dots');
+  const dots        = Array.from(dotsWrapper.querySelectorAll('.gallery-dot'));
   const SLIDE_COUNT = slides.length;
-  let current   = 0;
-  let autoTimer = null;
-  let touchStartX = 0;
+  let current      = 0;
+  let autoTimer    = null;
+  let touchStartX  = 0;
   let touchStartTime = 0;
 
-  function getSlideWidth() {
-    // Chaque slide: 70vw + 16px padding
-    return slides[0] ? slides[0].offsetWidth + 16 : window.innerWidth * 0.7 + 16;
+  // Chaque slide fait 70vw, gap 0 (on gère le padding dans le CSS)
+  // On utilise scroll natif : chaque slide = 100% du wrapper → centrage parfait
+  // Mais ici on reste sur transform pour compatibilité.
+  // Clé : slideWidth = offsetWidth de la slide RÉELLE (pas de padding parasite)
+
+  function computeOffset(idx) {
+    const wrapper    = track.parentElement;
+    const wrapWidth  = wrapper.offsetWidth;
+    const slide      = slides[idx];
+    if (!slide) return 0;
+    // offsetLeft de la slide par rapport au track (position naturelle)
+    const slideLeft  = slide.offsetLeft;
+    const slideWidth = slide.offsetWidth;
+    // Offset pour centrer : on veut que le centre de la slide = centre du wrapper
+    return -(slideLeft - (wrapWidth - slideWidth) / 2);
   }
 
   function goTo(index, animate = true) {
-    if (!animate) track.style.transition = 'none';
-    else track.style.transition = 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)';
-
     current = ((index % SLIDE_COUNT) + SLIDE_COUNT) % SLIDE_COUNT;
 
-    // Centrage : offset pour que la slide active soit au centre
-    const wrapper   = track.parentElement;
-    const wrapWidth = wrapper.offsetWidth;
-    const slideEl   = slides[0];
-    const slideWidth = slideEl ? slideEl.offsetWidth : window.innerWidth * 0.7;
-    const gap = 16; // gap entre slides en px (padding 8px * 2)
-    const sw = slideWidth + gap;
-    // Centrer la slide courante dans le wrapper
-    const padLeft = (wrapWidth - slideWidth) / 2;
-    const offset  = padLeft - current * sw;
-    track.style.transform = `translateX(${offset}px)`;
+    track.style.transition = animate
+      ? 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)'
+      : 'none';
 
-    slides.forEach((s, i) => {
-      s.classList.toggle('active-slide', i === current);
-    });
+    track.style.transform = `translateX(${computeOffset(current)}px)`;
+
+    slides.forEach((s, i) => s.classList.toggle('active-slide', i === current));
     dots.forEach((d, i) => d.classList.toggle('active', i === current));
 
-    // Lancer l'overlay de développement sur la slide active
+    // Overlay développement
     const overlay = slides[current].querySelector('.photo-develop-overlay');
     if (overlay) {
       overlay.style.animation = 'none';
-      overlay.offsetHeight; // reflow
+      overlay.offsetHeight;
       overlay.style.animation = 'photoDevelop 1.8s ease forwards';
     }
 
@@ -417,8 +428,8 @@ function initMobileGallery() {
   }, { passive: true });
 
   track.addEventListener('touchend', e => {
-    const dx   = e.changedTouches[0].clientX - touchStartX;
-    const dt   = Date.now() - touchStartTime;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dt = Date.now() - touchStartTime;
     if (Math.abs(dx) > 40 && dt < 400) {
       goTo(dx < 0 ? current + 1 : current - 1);
     }
@@ -434,9 +445,18 @@ function initMobileGallery() {
     });
   });
 
-  // Init
-  goTo(0, false);
-  startAuto();
+  // Recalcul au resize
+  window.addEventListener('resize', () => {
+    goTo(current, false);
+  });
+
+  // Init après un court délai pour que le DOM soit rendu
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      goTo(0, false);
+      startAuto();
+    });
+  });
 }
 
 /* ============================================================
@@ -503,24 +523,21 @@ function blowCandles() {
     document.getElementById('smoke3'),
   ];
 
-  // Éteindre flammes extrêmes (1 et 3) d'abord
-  [0, 2].forEach(i => extinguishFlame(i, smokes[i]));
+  // Éteindre toutes les flammes simultanément
+  [0, 1, 2].forEach(i => extinguishFlame(i, smokes[i]));
 
-  // Puis la flamme centrale (2) après 500ms
-  setTimeout(() => extinguishFlame(1, smokes[1]), 500);
-
-  // Stopper le RAF après tout
+  // Stopper le RAF
   setTimeout(() => {
     flameActive = false;
     if (flameRAF) cancelAnimationFrame(flameRAF);
-  }, 700);
+  }, 400);
 
   // Message final
   setTimeout(() => {
     document.getElementById('wish-message').classList.add('revealed');
     launchConfetti();
     btn.textContent = '🌸';
-  }, 1200);
+  }, 1000);
 }
 
 function extinguishFlame(index, smokeEl) {
@@ -628,7 +645,7 @@ function initBalloons() {
 }
 
 /* ============================================================
-   HERO GARLAND — guirlande de fleurs en haut
+   HERO GARLAND — guirlande d'anniversaire en haut
 ============================================================ */
 function initHeroGarland() {
   const hero = document.getElementById('hero');
@@ -636,166 +653,83 @@ function initHeroGarland() {
   garland.className = 'hero-garland';
   garland.setAttribute('aria-hidden', 'true');
 
-  // SVG guirlande : vignes, fleurs roses, papillons
+  // Couleurs alternées pour les fanions
+  const flagColors = [
+    '#e8a5b2','#c9a84c','#f9b4c1','#ffd9df','#c2517a',
+    '#ffe088','#e8a5b2','#c9a84c','#f9b4c1','#ffd9df',
+    '#c2517a','#ffe088','#e8a5b2','#c9a84c','#f9b4c1',
+  ];
+
+  // Positions des fanions répartis sur la largeur
+  // viewBox 0 0 1200 110
+  // La ficelle fait une belle courbe caténaire de gauche à droite
+  // On place 15 fanions équidistants
+  const N = 15;
+  const ropeY1 = 18, ropeY2 = 18, sagY = 52; // hauteur ficelle aux extrémités et au centre
+  // Calcul d'une parabole simple pour la ficelle
+  function ropeY(x) {
+    // parabole : y = sagY - (sagY - ropeY1)*4*(x/1200)*(1 - x/1200)
+    return ropeY1 + (sagY - ropeY1) * 4 * (x / 1200) * (1 - x / 1200);
+  }
+
+  let flags = '';
+  let ropePoints = '';
+
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    const x = 20 + t * 1160;
+    const y = ropeY(x);
+    const color = flagColors[i % flagColors.length];
+    const angle = (Math.random() - 0.5) * 14; // légère rotation aléatoire
+    const w = 48, h = 56;
+
+    // Fanion triangulaire : sommet en (0,0), base en haut
+    flags += `
+      <g transform="translate(${x}, ${y}) rotate(${angle})">
+        <polygon points="${-w/2},0 ${w/2},0 0,${h}"
+          fill="${color}" opacity="0.88"/>
+        <polygon points="${-w/2},0 ${w/2},0 0,${h}"
+          fill="none" stroke="white" stroke-width="0.8" opacity="0.4"/>
+        <line x1="${-w/2}" y1="0" x2="${w/2}" y2="0"
+          stroke="white" stroke-width="1.2" opacity="0.35"/>
+      </g>`;
+
+    if (i === 0) ropePoints = `M ${x} ${y}`;
+    else ropePoints += ` Q ${x - 580/N} ${y + 8} ${x} ${y}`;
+  }
+
+  // Ficelle caténaire lissée
+  let catenary = `M -10 ${ropeY(0)}`;
+  for (let px = 0; px <= 1210; px += 10) {
+    catenary += ` L ${px} ${ropeY(px)}`;
+  }
+
   garland.innerHTML = `
-  <svg class="garland-svg" viewBox="0 0 1200 120" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-    <!-- Vigne principale -->
-    <path d="M-20 55 Q60 20 120 60 Q180 95 240 50 Q300 10 360 55 Q420 95 480 48 Q540 5 600 55 Q660 100 720 50 Q780 5 840 55 Q900 100 960 50 Q1020 5 1080 55 Q1140 95 1220 50"
-      stroke="#b5764a" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.55"/>
-    <!-- Petites branches -->
-    <path d="M90 45 Q95 25 110 20" stroke="#b5764a" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <path d="M210 58 Q218 38 230 30" stroke="#b5764a" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <path d="M350 48 Q358 28 370 22" stroke="#b5764a" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <path d="M490 42 Q498 22 510 16" stroke="#b5764a" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <path d="M640 48 Q648 28 660 22" stroke="#b5764a" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <path d="M790 48 Q798 28 810 22" stroke="#b5764a" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <path d="M940 46 Q948 26 960 20" stroke="#b5764a" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <path d="M1080 48 Q1088 28 1100 22" stroke="#b5764a" stroke-width="1.2" fill="none" opacity="0.4"/>
-    <!-- Feuilles -->
-    <ellipse cx="112" cy="17" rx="7" ry="4" fill="#7ab87a" opacity="0.45" transform="rotate(-30 112 17)"/>
-    <ellipse cx="232" cy="27" rx="7" ry="4" fill="#7ab87a" opacity="0.45" transform="rotate(-20 232 27)"/>
-    <ellipse cx="372" cy="19" rx="7" ry="4" fill="#7ab87a" opacity="0.45" transform="rotate(-35 372 19)"/>
-    <ellipse cx="512" cy="13" rx="7" ry="4" fill="#7ab87a" opacity="0.45" transform="rotate(-25 512 13)"/>
-    <ellipse cx="662" cy="19" rx="7" ry="4" fill="#7ab87a" opacity="0.45" transform="rotate(-30 662 19)"/>
-    <ellipse cx="812" cy="19" rx="7" ry="4" fill="#7ab87a" opacity="0.45" transform="rotate(-30 812 19)"/>
-    <ellipse cx="962" cy="17" rx="7" ry="4" fill="#7ab87a" opacity="0.45" transform="rotate(-30 962 17)"/>
-    <ellipse cx="1102" cy="19" rx="7" ry="4" fill="#7ab87a" opacity="0.45" transform="rotate(-30 1102 19)"/>
-    <!-- Vignes latérales gauche (dépassent) -->
-    <path d="M-20 55 Q-40 30 -30 5" stroke="#b5764a" stroke-width="1.5" fill="none" opacity="0.3"/>
-    <ellipse cx="-28" cy="6" rx="6" ry="4" fill="#7ab87a" opacity="0.35" transform="rotate(15 -28 6)"/>
-    <!-- Vignes latérales droite (dépassent) -->
-    <path d="M1220 50 Q1240 28 1235 5" stroke="#b5764a" stroke-width="1.5" fill="none" opacity="0.3"/>
-    <ellipse cx="1234" cy="6" rx="6" ry="4" fill="#7ab87a" opacity="0.35" transform="rotate(-15 1234 6)"/>
+  <svg class="garland-svg" viewBox="0 0 1200 115" preserveAspectRatio="xMidYMid meet"
+       xmlns="http://www.w3.org/2000/svg" overflow="visible">
 
-    <!-- FLEURS : macro rose à 5 pétales -->
-    <!-- Fleur 1 -->
-    <g transform="translate(60,57)">
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="4" fill="#c9a84c"/>
-    </g>
-    <!-- Fleur 2 -->
-    <g transform="translate(180,52)">
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="3.5" fill="#ffe088"/>
-    </g>
-    <!-- Fleur 3 -->
-    <g transform="translate(300,58)">
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="4" fill="#ffd9df"/>
-    </g>
-    <!-- Fleur 4 -->
-    <g transform="translate(420,50)">
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="3.5" fill="#c9a84c"/>
-    </g>
-    <!-- Fleur 5 -->
-    <g transform="translate(540,57)">
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#f9b4c1" opacity="0.85"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#f9b4c1" opacity="0.85" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#f9b4c1" opacity="0.85" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#f9b4c1" opacity="0.85" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#f9b4c1" opacity="0.85" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="4" fill="#ffe088"/>
-    </g>
-    <!-- Fleur 6 -->
-    <g transform="translate(660,52)">
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#c2517a" opacity="0.8"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#c2517a" opacity="0.8" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#c2517a" opacity="0.8" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#c2517a" opacity="0.8" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#c2517a" opacity="0.8" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="3.5" fill="#ffd9df"/>
-    </g>
-    <!-- Fleur 7 -->
-    <g transform="translate(780,55)">
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#e8a5b2" opacity="0.85" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="4" fill="#c9a84c"/>
-    </g>
-    <!-- Fleur 8 -->
-    <g transform="translate(900,53)">
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#f9b4c1" opacity="0.9" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="3.5" fill="#ffe088"/>
-    </g>
-    <!-- Fleur 9 -->
-    <g transform="translate(1020,57)">
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-9" rx="5" ry="9" fill="#c2517a" opacity="0.75" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="4" fill="#ffd9df"/>
-    </g>
-    <!-- Fleur 10 -->
-    <g transform="translate(1140,54)">
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9" transform="rotate(72)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9" transform="rotate(144)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9" transform="rotate(216)"/>
-      <ellipse cx="0" cy="-8" rx="4.5" ry="8" fill="#e8a5b2" opacity="0.9" transform="rotate(288)"/>
-      <circle cx="0" cy="0" r="3.5" fill="#c9a84c"/>
-    </g>
+    <!-- Ficelle caténaire -->
+    <path d="${catenary}"
+      stroke="#8B6040" stroke-width="1.8" fill="none"
+      stroke-linecap="round" opacity="0.55"/>
 
-    <!-- PAPILLONS -->
-    <!-- Papillon 1 -->
-    <g class="butterfly" transform="translate(130,28)" style="animation: butterflyFloat1 5s ease-in-out infinite">
-      <ellipse cx="-7" cy="-3" rx="8" ry="5" fill="#f9b4c1" opacity="0.75" transform="rotate(-20 -7 -3)"/>
-      <ellipse cx="7" cy="-3" rx="8" ry="5" fill="#f9b4c1" opacity="0.75" transform="rotate(20 7 -3)"/>
-      <ellipse cx="-5" cy="3" rx="5" ry="3" fill="#e8a5b2" opacity="0.6" transform="rotate(-30 -5 3)"/>
-      <ellipse cx="5" cy="3" rx="5" ry="3" fill="#e8a5b2" opacity="0.6" transform="rotate(30 5 3)"/>
-      <line x1="0" y1="-6" x2="0" y2="6" stroke="#7a4060" stroke-width="0.8" opacity="0.5"/>
-      <path d="M0 -6 Q-4 -12 -3 -14" stroke="#7a4060" stroke-width="0.7" fill="none" opacity="0.4"/>
-      <path d="M0 -6 Q4 -12 3 -14" stroke="#7a4060" stroke-width="0.7" fill="none" opacity="0.4"/>
-    </g>
-    <!-- Papillon 2 -->
-    <g class="butterfly" transform="translate(460,22)" style="animation: butterflyFloat2 6s ease-in-out infinite 1.5s">
-      <ellipse cx="-7" cy="-3" rx="7" ry="4.5" fill="#c9a84c" opacity="0.65" transform="rotate(-20 -7 -3)"/>
-      <ellipse cx="7" cy="-3" rx="7" ry="4.5" fill="#c9a84c" opacity="0.65" transform="rotate(20 7 -3)"/>
-      <ellipse cx="-5" cy="3" rx="4.5" ry="2.8" fill="#ffe088" opacity="0.55" transform="rotate(-30 -5 3)"/>
-      <ellipse cx="5" cy="3" rx="4.5" ry="2.8" fill="#ffe088" opacity="0.55" transform="rotate(30 5 3)"/>
-      <line x1="0" y1="-5" x2="0" y2="5" stroke="#7a4060" stroke-width="0.8" opacity="0.4"/>
-    </g>
-    <!-- Papillon 3 -->
-    <g class="butterfly" transform="translate(750,25)" style="animation: butterflyFloat1 7s ease-in-out infinite 3s">
-      <ellipse cx="-7" cy="-3" rx="8" ry="5" fill="#ffd9df" opacity="0.8" transform="rotate(-20 -7 -3)"/>
-      <ellipse cx="7" cy="-3" rx="8" ry="5" fill="#ffd9df" opacity="0.8" transform="rotate(20 7 -3)"/>
-      <ellipse cx="-5" cy="3" rx="5" ry="3" fill="#e8a5b2" opacity="0.65" transform="rotate(-30 -5 3)"/>
-      <ellipse cx="5" cy="3" rx="5" ry="3" fill="#e8a5b2" opacity="0.65" transform="rotate(30 5 3)"/>
-      <line x1="0" y1="-6" x2="0" y2="6" stroke="#7a4060" stroke-width="0.8" opacity="0.4"/>
-      <path d="M0 -6 Q-4 -12 -3 -14" stroke="#7a4060" stroke-width="0.7" fill="none" opacity="0.35"/>
-      <path d="M0 -6 Q4 -12 3 -14" stroke="#7a4060" stroke-width="0.7" fill="none" opacity="0.35"/>
-    </g>
-    <!-- Papillon 4 -->
-    <g class="butterfly" transform="translate(1050,30)" style="animation: butterflyFloat2 5.5s ease-in-out infinite 0.8s">
-      <ellipse cx="-6" cy="-3" rx="7" ry="4.5" fill="#c2517a" opacity="0.6" transform="rotate(-20 -6 -3)"/>
-      <ellipse cx="6" cy="-3" rx="7" ry="4.5" fill="#c2517a" opacity="0.6" transform="rotate(20 6 -3)"/>
-      <ellipse cx="-4" cy="3" rx="4.5" ry="2.8" fill="#f9b4c1" opacity="0.55" transform="rotate(-30 -4 3)"/>
-      <ellipse cx="4" cy="3" rx="4.5" ry="2.8" fill="#f9b4c1" opacity="0.55" transform="rotate(30 4 3)"/>
-      <line x1="0" y1="-5" x2="0" y2="5" stroke="#7a4060" stroke-width="0.8" opacity="0.4"/>
-    </g>
+    <!-- Fanions -->
+    ${flags}
+
+    <!-- Extrémités : ficelle sort du bord gauche -->
+    <line x1="-30" y1="${ropeY(0)}" x2="20" y2="${ropeY(0)}"
+      stroke="#8B6040" stroke-width="1.8" opacity="0.45"/>
+    <!-- ... et du bord droit -->
+    <line x1="1180" y1="${ropeY(1200)}" x2="1230" y2="${ropeY(1200)}"
+      stroke="#8B6040" stroke-width="1.8" opacity="0.45"/>
+
+    <!-- Petits nœuds sur la ficelle aux attaches -->
+    ${Array.from({length: N}, (_, i) => {
+      const t = i / (N - 1);
+      const x = 20 + t * 1160;
+      const y = ropeY(x);
+      return `<circle cx="${x}" cy="${y}" r="2.5" fill="#8B6040" opacity="0.5"/>`;
+    }).join('')}
   </svg>
   `;
 

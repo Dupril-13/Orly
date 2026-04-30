@@ -200,6 +200,8 @@ body {
 }
 .key:hover  { background: rgba(255,255,255,0.13); }
 .key:active { transform: scale(0.91); background: rgba(255,255,255,0.2); }
+.key:focus  { outline: none; background: rgba(255,255,255,0.07); }
+.key:focus:not(:focus-visible) { background: rgba(255,255,255,0.07); }
 
 .key.key-clear {
   background: rgba(255,255,255,0.07);
@@ -209,13 +211,15 @@ body {
   letter-spacing: 0;
 }
 .key.key-clear:hover  { background: rgba(255,255,255,0.13); color: white; }
+.key.key-clear:focus  { outline: none; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6); }
 
 .key.key-validate {
   background: var(--pink-deep);
   border-color: var(--pink-deep);
   font-size: clamp(16px, 4.5vw, 22px);
 }
-.key.key-validate:hover { background: #d4638a; }
+.key.key-validate:hover  { background: #d4638a; }
+.key.key-validate:focus  { outline: none; background: var(--pink-deep); }
 
 /* LCD Screen — largeur alignée sur le clavier */
 .lcd-screen {
@@ -282,15 +286,7 @@ body {
   height: auto;
   display: block;
   overflow: visible;
-}
-
-@keyframes butterflyFloat1 {
-  0%, 100% { transform: translateY(0) rotate(-3deg); }
-  50%       { transform: translateY(-6px) rotate(3deg); }
-}
-@keyframes butterflyFloat2 {
-  0%, 100% { transform: translateY(0) rotate(2deg); }
-  50%       { transform: translateY(-8px) rotate(-2deg); }
+  max-height: 130px;
 }
 
 /* =============================================
@@ -663,6 +659,8 @@ body {
   display: flex;
   gap: 8px;
   justify-content: center;
+  width: 100%;
+  align-items: center;
 }
 .gallery-dot {
   width: 6px; height: 6px;
@@ -793,7 +791,7 @@ body {
 }
 .qualities-sub {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--text-light);
@@ -801,7 +799,7 @@ body {
 }
 .qualities-count {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 2px;
   color: var(--gold);
   margin-top: 6px;
@@ -852,7 +850,7 @@ body {
 /* Texte caché */
 .q-text {
   font-family: var(--font-script);
-  font-size: clamp(13px, 2vw, 16px);
+  font-size: clamp(14px, 2.2vw, 18px);
   color: var(--text-dark);
   text-align: center;
   line-height: 1.35;
